@@ -8,5 +8,6 @@ router.post('/register', registerUser );
 router.post('/login', loginUser );
 router.post('/apply', apply );
 router.post('/counceling', counceling );
+router.post('/contact', counceling );
 
-export default router;
+export default router;      
