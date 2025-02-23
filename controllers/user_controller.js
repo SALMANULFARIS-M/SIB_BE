@@ -1,6 +1,5 @@
 // User-related functions (e.g., user registration, login)
-import { nodemailer } from "nodemailer";
-
+import nodemailer from "nodemailer";
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
   service: 'gmail', // or your email service
