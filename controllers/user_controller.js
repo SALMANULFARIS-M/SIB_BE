@@ -18,7 +18,6 @@ export const loginUser = async (req, res) => {
 };
 
 export const apply = async (req, res) => {
-  console.log(req.body);
 
   try {
     const response = await fetch(
@@ -44,6 +43,8 @@ export const apply = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+
 export const counceling = async (req, res) => {
     try {
       const response = await fetch(
