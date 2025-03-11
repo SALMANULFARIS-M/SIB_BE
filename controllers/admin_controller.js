@@ -46,9 +46,11 @@ export const loginAdmin = async (req, res) => {
 // ✅ Add Blog (with Image Upload)
 export const addBlog = async (req, res) => {
   try {
-    const { title, slug, author, content } = req.body;
+    
+    const { title, author, content } = req.body;
 
     if (!req.file) {
+      console.log("cause");
       return res.status(400).json({ error: "No image uploaded" });
     }
 
@@ -56,7 +58,14 @@ export const addBlog = async (req, res) => {
     const uploadResult = await new Promise((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         { folder: "blogs" }, // Stores inside "blogs/" folder
-        (error, result) => (error ? reject(error) : resolve(result))
+        (error, result) => {
+          if (error) {
+            console.error("Cloudinary Upload Error:", error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
       );
       upload.end(req.file.buffer); // Pass file buffer to Cloudinary
     });
@@ -64,16 +73,16 @@ export const addBlog = async (req, res) => {
     // ✅ Save the blog in MongoDB
     const newBlog = new Blog({
       title,
-      slug,
       author,
-      content,
+      content:JSON.parse(content),
       featuredImage: uploadResult.secure_url, // Store image URL
     });
 
     await newBlog.save();
-    res.status(201).json({ message: "Blog added successfully", blog: newBlog });
+    res.status(201).json({success:true, message: "Blog added successfully", blog: newBlog });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    console.log("error:-----",err);
+    res.status(500).json({ error: "Server error" }  );
   }
 };
 
@@ -91,6 +100,17 @@ export const listBlogs = async (req, res) => {
 export const getBlogBySlug = async (req, res) => {
   try {
     const blog = await Blog.findOne({ slug: req.params.slug });
+    if (!blog) return res.status(404).json({ error: "Blog not found" });
+
+    res.json(blog);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+// ✅ Get Blog by Slug
+export const getBlogById = async (req, res) => {
+  try {
+    const blog = await Blog.findOne({ _id: req.params.id });
     if (!blog) return res.status(404).json({ error: "Blog not found" });
 
     res.json(blog);
@@ -139,7 +159,7 @@ export const editBlog = async (req, res) => {
 };
 
 // ✅ Delete Blog (Remove from DB + Cloudinary)
-export const deleteBlog = async (req, res) => {
+export const deleteBlog = async (req, res,next) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ error: "Blog not found" });
@@ -155,6 +175,7 @@ export const deleteBlog = async (req, res) => {
 
     res.json({ message: "Blog deleted successfully" });
   } catch (err) {
+    next(err); // Pass the error to the global error handler
     res.status(500).json({ error: "Server error" });
   }
 };
