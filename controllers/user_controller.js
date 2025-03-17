@@ -100,3 +100,17 @@ export const latestBlogs = async (req, res, next) => {
     next(error); // Pass the error to the error-handling middleware
   }
 };
+
+export const BlogSlugs = async (req, res, next) => {
+  try {        
+    const blogSlugs = await Blog.find({}, { slug: 1, _id: 0 }); // Get only the 'slug' field
+
+    // Convert array of objects to an array of strings
+    const slugs = blogSlugs.map(blog => blog.slug);
+
+    res.status(200).json(slugs); // Return a flat array of strings
+  } catch (error) {
+    next(error); // Pass the error to the error-handling middleware
+  }
+};
+
