@@ -19,7 +19,7 @@ const parseListString = (text) => {
 };
 
 
-export const loginAdmin = async (req, res) => {
+export const loginAdmin = async (req, res,next) => {
   const { email, password } = req.body;
 
   // Fetch credentials from environment variables
@@ -29,7 +29,6 @@ export const loginAdmin = async (req, res) => {
 
   // Validate environment variables
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !JWT_SECRET) {
-    console.error("Missing environment variables for admin login");
     return res.status(500).json({ success: false, message: "Server configuration error" });
   }
 
@@ -37,7 +36,7 @@ export const loginAdmin = async (req, res) => {
     // Validate credentials
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       // Generate JWT token
-      const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "2d" }); // Token valid for 2 days
+        const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "2d" }); // Token valid for 2 days
 
       // Send success response
       return res.status(200).json({ success: true, message: "Login successful", token });
@@ -51,7 +50,7 @@ export const loginAdmin = async (req, res) => {
 }
 
 // ✅ Add Blog (with Image Upload)
-export const addBlog = async (req, res) => {
+export const addBlog = async (req, res,next) => {
   try {
     const { title, author, content, category } = req.body;
 
@@ -98,6 +97,8 @@ export const addBlog = async (req, res) => {
     await newBlog.save();
     res.status(201).json({ success: true, message: "Blog added successfully", blog: newBlog });
   } catch (error) {
+    console.log(error);
+    
     next(error); 
   }
 };

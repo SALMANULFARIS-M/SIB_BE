@@ -1,6 +1,7 @@
 // User-related functions (e.g., user registration, login)
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import  Blog  from "../models/blog.js";
 
 dotenv.config();
 
@@ -92,7 +93,7 @@ export const contact = async (req, res, next) => {
 
 // ✅ List Blogs (with Pagination)
 export const latestBlogs = async (req, res, next) => {
-  try {    
+  try {        
     const latestBlogs = await Blog.find().sort({ createdAt: -1 }).limit(3);
     res.status(200).json(latestBlogs);
   } catch (error) {
