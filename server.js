@@ -4,7 +4,6 @@ import connectDB from "./config/db.js";
 import userRoute from "./routes/user_routes.js";
 import adminRoute from "./routes/admin_routes.js";
 import dotenv from "dotenv";
-import multer from "multer";
 
 dotenv.config();
 
@@ -36,8 +35,12 @@ app.use("/admin/sib", adminRoute);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
+
+  // Customize error response based on error type
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+
+  res.status(statusCode).json({ success: false, message });
 });
 
 // Start Server

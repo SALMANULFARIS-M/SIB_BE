@@ -1,9 +1,7 @@
 import express from 'express';
-import { addBlog, deleteBlog, editBlog, getBlogById, getBlogBySlug, listBlogs, loginAdmin } from '../controllers/admin_controller.js';
+import { addBlog, deleteBlog, editBlog, loginAdmin } from '../controllers/admin_controller.js';
 import upload from "../middleware/upload.js";
-// import { getColleges } from '../controllers/common_controller.js';
-// import { addCollege } from '../controllers/admin_controller.js';
-// import { authenticateAdmin } from '../middleware/admin_auth.js'; // Middleware for admin authentication
+import { getBlogById, getBlogBySlug,listBlogs } from '../controllers/common_controller.js';
 
 
 const router = express.Router();
@@ -15,7 +13,7 @@ router.post('/login', loginAdmin );
 // Blog Routes
 router.post('/addblog', upload.single("featuredImage"), addBlog);  // ✅ Add Blog with Image
 router.get('/blogs', listBlogs);  // ✅ List All Blogs
-router.get('/blogs/:id', getBlogById);  // ✅ Get Blog by Slug
+router.get('/blogs/:id',getBlogById );  // ✅ Get Blog by Slug
 router.put('/editblog/:id', upload.single("featuredImage"), editBlog);  // ✅ Edit Blog with Optional Image
 router.delete('/deleteblog/:id', deleteBlog);  // ✅ Delete Blog & Remove Image from Cloudinary
 router.get('/getslug/:slug',getBlogBySlug)

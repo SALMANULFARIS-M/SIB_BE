@@ -9,48 +9,53 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-// Admin-related functions (e.g., add college, update college)
-// export const addCollege = async (req, res) => {
-//   const { name, courses, location } = req.body;
-//   const newCollege = new College({ name, courses, location });
 
-//   try {
-//     const savedCollege = await newCollege.save();
-//     res.status(201).json(savedCollege);
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// };
-
-// Add other admin-related functions (e.g., update, delete)
+// Helper function to parse list-like strings into arrays
+const parseListString = (text) => {
+  // Match lines starting with numbers or bullets (e.g., "1.", "•", etc.)
+  const listItems = text.split(/\n+/).map((item) => item.trim()).filter((item) => item);
+  // Remove numbering or bullets (e.g., "1.", "•")
+  return listItems.map((item) => item.replace(/^\s*(\d+\.|\•)\s*/, ""));
+};
 
 
 export const loginAdmin = async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    // Fetch credentials from environment variables
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-    const JWT_SECRET = process.env.JWT_SECRET;
+  // Fetch credentials from environment variables
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+  const JWT_SECRET = process.env.JWT_SECRET;
 
+  // Validate environment variables
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !JWT_SECRET) {
+    console.error("Missing environment variables for admin login");
+    return res.status(500).json({ success: false, message: "Server configuration error" });
+  }
+
+  try {
     // Validate credentials
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '2d' }); // Token valid for 1 day
-        res.status(200).json({ success: true, token });
-    } else {
-        res.status(401).json({ success: false, message: 'Invalid Credentials' });
-    }
-};
+      // Generate JWT token
+      const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "2d" }); // Token valid for 2 days
 
+      // Send success response
+      return res.status(200).json({ success: true, message: "Login successful", token });
+    } else {
+      // Send error response for invalid credentials
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+  } catch (error) {
+    next(error);
+  }
+}
 
 // ✅ Add Blog (with Image Upload)
 export const addBlog = async (req, res) => {
   try {
-    
-    const { title, author, content } = req.body;
+    const { title, author, content, category } = req.body;
 
     if (!req.file) {
-      console.log("cause");
       return res.status(400).json({ error: "No image uploaded" });
     }
 
@@ -60,7 +65,6 @@ export const addBlog = async (req, res) => {
         { folder: "blogs" }, // Stores inside "blogs/" folder
         (error, result) => {
           if (error) {
-            console.error("Cloudinary Upload Error:", error);
             reject(error);
           } else {
             resolve(result);
@@ -70,114 +74,125 @@ export const addBlog = async (req, res) => {
       upload.end(req.file.buffer); // Pass file buffer to Cloudinary
     });
 
+    // ✅ Parse and process the content
+    const parsedContent = JSON.parse(content).map((item) => {
+      if (item.type === "list" && typeof item.data === "string") {
+        // Convert list-like string into an array of strings
+        return {
+          ...item,
+          data: parseListString(item.data),
+        };
+      }
+      return item;
+    });
+
     // ✅ Save the blog in MongoDB
     const newBlog = new Blog({
       title,
       author,
-      content:JSON.parse(content),
+      category,
+      content: parsedContent,
       featuredImage: uploadResult.secure_url, // Store image URL
     });
 
     await newBlog.save();
-    res.status(201).json({success:true, message: "Blog added successfully", blog: newBlog });
-  } catch (err) {
-    console.log("error:-----",err);
-    res.status(500).json({ error: "Server error" }  );
+    res.status(201).json({ success: true, message: "Blog added successfully", blog: newBlog });
+  } catch (error) {
+    next(error); 
   }
 };
 
-// ✅ List All Blogs
-export const listBlogs = async (req, res) => {
-  try {
-    const blogs = await Blog.find().sort({ publishedDate: -1 });
-    res.json(blogs);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-};
 
-// ✅ Get Blog by Slug
-export const getBlogBySlug = async (req, res) => {
-  try {
-    const blog = await Blog.findOne({ slug: req.params.slug });
-    if (!blog) return res.status(404).json({ error: "Blog not found" });
 
-    res.json(blog);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-};
-// ✅ Get Blog by Slug
-export const getBlogById = async (req, res) => {
-  try {
-    const blog = await Blog.findOne({ _id: req.params.id });
-    if (!blog) return res.status(404).json({ error: "Blog not found" });
-
-    res.json(blog);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-};
 
 // ✅ Edit Blog (with Optional Image Upload)
-export const editBlog = async (req, res) => {
+export const editBlog = async (req, res, next) => {
   try {
     const { title, slug, author, content } = req.body;
+
+    // Validate required fields
+    if (!title || !slug || !author || !content) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    // Find the blog by ID
     const blog = await Blog.findById(req.params.id);
-    if (!blog) return res.status(404).json({ error: "Blog not found" });
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "Blog not found" });
+    }
 
     let imageUrl = blog.featuredImage; // Keep old image by default
 
+    // Handle image upload if a new file is provided
     if (req.file) {
-      // ✅ Delete old Cloudinary image
-      const oldPublicId = blog.featuredImage.split("/").pop().split(".")[0];
-      await cloudinary.uploader.destroy(`blogs/${oldPublicId}`);
+      try {
+        // ✅ Delete old Cloudinary image
+        const oldPublicId = blog.featuredImage.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`blogs/${oldPublicId}`);
 
-      // ✅ Upload new image to Cloudinary
-      const uploadResult = await new Promise((resolve, reject) => {
-        const upload = cloudinary.uploader.upload_stream(
-          { folder: "blogs" },
-          (error, result) => (error ? reject(error) : resolve(result))
-        );
-        upload.end(req.file.buffer);
-      });
+        // ✅ Upload new image to Cloudinary
+        const uploadResult = await new Promise((resolve, reject) => {
+          const upload = cloudinary.uploader.upload_stream(
+            { folder: "blogs" },
+            (error, result) => (error ? reject(error) : resolve(result))
+          );
+          upload.end(req.file.buffer);
+        });
 
-      imageUrl = uploadResult.secure_url; // Update image URL
+        imageUrl = uploadResult.secure_url; // Update image URL
+      } catch (error) {
+        return res.status(500).json({ success: false, message: "Error updating image" });
+      }
     }
 
     // ✅ Update the blog
     const updatedBlog = await Blog.findByIdAndUpdate(
       req.params.id,
       { title, slug, author, content, featuredImage: imageUrl },
-      { new: true }
+      { new: true, runValidators: true } // Ensure validators are run
     );
 
-    res.json({ message: "Blog updated successfully", updatedBlog });
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(200).json({ success: true, message: "Blog updated successfully", updatedBlog });
+  } catch (error) {
+    next(error); // Pass the error to the error-handling middleware
   }
 };
 
-// ✅ Delete Blog (Remove from DB + Cloudinary)
-export const deleteBlog = async (req, res,next) => {
+
+export const deleteBlog = async (req, res, next) => {
   try {
     const blog = await Blog.findById(req.params.id);
-    if (!blog) return res.status(404).json({ error: "Blog not found" });
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "Blog not found" });
+    }
 
-    // ✅ Extract Public ID from Cloudinary URL
-    const publicId = blog.featuredImage.split("/").pop().split(".")[0];
+    // ✅ Extract Public ID from Cloudinary URL (handles nested folders)
+    const imageUrl = blog.featuredImage;
+    const publicId = imageUrl.split("/").slice(-2).join("/").split(".")[0]; // Extract correct ID
+    let cloudinaryError = null;
 
-    // ✅ Delete image from Cloudinary
-    await cloudinary.uploader.destroy(`blogs/${publicId}`);
+    // ✅ Delete image from Cloudinary (folder path included)
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+      cloudinaryError = "Failed to delete image from Cloudinary";
+    }
 
     // ✅ Delete blog from MongoDB
     await Blog.findByIdAndDelete(req.params.id);
 
-    res.json({ message: "Blog deleted successfully" });
-  } catch (err) {
-    next(err); // Pass the error to the global error handler
-    res.status(500).json({ error: "Server error" });
+    // ✅ Send response based on Cloudinary deletion status
+    if (cloudinaryError) {
+      return res.status(200).json({
+        success: true,
+        message: "Blog deleted successfully, but image deletion failed",
+        warning: cloudinaryError,
+      });
+    } else {
+      return res.status(200).json({ success: true, message: "Blog deleted successfully" });
+    }
+  } catch (error) {
+    next(error); // Pass the error to the error-handling middleware
   }
 };
-
   

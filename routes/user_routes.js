@@ -1,13 +1,20 @@
 import express from 'express';
-import { registerUser , loginUser, apply, counceling, contact  } from '../controllers/user_controller.js';
+import {  apply, counceling, contact,latestBlogs } from '../controllers/user_controller.js';
+import { getBlogBySlug, listBlogs } from '../controllers/common_controller.js';
 
 const router = express.Router();
 
-// User registration and login routes
-router.post('/register', registerUser );
-router.post('/login', loginUser );
-router.post('/apply', apply );
-router.post('/counceling', counceling );
-router.post('/contact', contact );
+// Application and counseling routes
+router.post('/apply', apply); // Submit application
+router.post('/counseling',  counceling); // Submit counseling request
 
-export default router;      
+// Contact route
+router.post('/contact',  contact); // Submit contact form
+
+// Blog routes
+router.get('/blog/:slug', getBlogBySlug); // Get blog by slug
+router.get('/blogs', listBlogs); // List all blogs
+router.get('/latestblogs', latestBlogs); // List all blogs
+
+
+export default router;
