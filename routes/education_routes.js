@@ -1,9 +1,10 @@
 import express from 'express';
-import { addUniversity, deleteUniversity, getUniversities, getUniversityWithColleges, updateUniversity } from '../controllers/university_controller';
-import { addCollege, deleteCollege, getCollegeById, getColleges, updateCollege } from '../controllers/college_controller';
-import { addCourse, deleteCourse, getCourses, getCoursesById, updateCourse } from '../controllers/course_controller';
+import { addUniversity, deleteUniversity, getUniversities, getUniversityWithColleges, updateUniversity } from '../controllers/university_controller.js';
+import { addCollege, deleteCollege, getCollegeById, getColleges, updateCollege } from '../controllers/college_controller.js';
+import { addCourse, deleteCourse, getCourses, getCoursesById, updateCourse } from '../controllers/course_controller.js';
 import upload from "../middleware/upload.js";
 
+const router = express.Router();
 
 
 //universities
@@ -31,8 +32,3 @@ router.delete("/course/:id", deleteCourse);
 
 export default router;
 
-
-
-
-
-const router = express.Router();

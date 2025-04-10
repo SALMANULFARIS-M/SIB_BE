@@ -5,7 +5,6 @@ import { getBlogById, getBlogBySlug,listBlogs } from '../controllers/common_cont
 
 
 const router = express.Router();
-// Multer setup for handling file uploads
 
 
 // Admin Login
