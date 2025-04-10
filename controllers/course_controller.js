@@ -12,7 +12,7 @@ export const addCourse = async (req, res) => {
 
 export const getCourses = async (req, res) => {
   try {
-    const courses = await Course.find().populate("collegeId");
+    const courses = await Course.find().populate("collegeId");    
     res.json(courses);
   } catch (err) {
    next(err);

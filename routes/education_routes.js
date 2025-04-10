@@ -2,13 +2,14 @@ import express from 'express';
 import { addUniversity, deleteUniversity, getUniversities, getUniversityWithColleges, updateUniversity } from '../controllers/university_controller';
 import { addCollege, deleteCollege, getCollegeById, getColleges, updateCollege } from '../controllers/college_controller';
 import { addCourse, deleteCourse, getCourses, getCoursesById, updateCourse } from '../controllers/course_controller';
+import upload from "../middleware/upload.js";
 
 
 
 //universities
 router.get('/universities',getUniversities);
 router.get('/collegesUnderUniversites/:id',getUniversityWithColleges);
-router.post("/university", addUniversity);
+router.post("/university",upload.single("logo"), addUniversity);
 router.put("/university/:id", updateUniversity);
 router.delete("/university/:id", deleteUniversity);
 

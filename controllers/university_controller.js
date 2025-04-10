@@ -1,9 +1,27 @@
 import University from "../models/university.js";
 
+
 export const addUniversity = async (req, res) => {
   try {
-    const { name, logo } = req.body;
-    const university = new University({ name, logo });
+    const { name} = req.body;
+    if (!req.file) {
+      return res.status(400).json({ error: "No image uploaded" });
+    }
+// ✅ Upload image to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      const upload = cloudinary.uploader.upload_stream(
+        { folder: "universities" }, // Stores inside "blogs/" folder
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+      upload.end(req.file.buffer); // Pass file buffer to Cloudinary
+    });
+    const university = new University({ name,logo: uploadResult.secure_url });
     await university.save();
     res.status(201).json(university);
   } catch (err) {

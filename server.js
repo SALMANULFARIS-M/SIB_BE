@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import userRoute from "./routes/user_routes.js";
+import educationRoute from "./routes/education_routes.js";
 import adminRoute from "./routes/admin_routes.js";
 import dotenv from "dotenv";
 
@@ -29,7 +30,7 @@ connectDB();
 
 // Routes
 app.use("/user", userRoute);
-app.use("/education", userRoute);
+app.use("/education", educationRoute);
 app.use("/admin/sib", adminRoute);
 
 

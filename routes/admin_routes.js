@@ -2,9 +2,6 @@ import express from 'express';
 import { addBlog, deleteBlog, editBlog, loginAdmin } from '../controllers/admin_controller.js';
 import upload from "../middleware/upload.js";
 import { getBlogById, getBlogBySlug,listBlogs } from '../controllers/common_controller.js';
-import { addUniversity, deleteUniversity, getUniversities, updateUniversity } from '../controllers/university_controller.js';
-import { addCollege, deleteCollege, getColleges, updateCollege } from '../controllers/college_controller.js';
-import { addCourse, deleteCourse, getCourses, updateCourse } from '../controllers/course_controller.js';
 
 
 const router = express.Router();
