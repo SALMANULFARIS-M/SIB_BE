@@ -29,8 +29,8 @@ connectDB();
 
 // Routes
 app.use("/user", userRoute);
+app.use("/education", userRoute);
 app.use("/admin/sib", adminRoute);
-
 
 
 // Error Handling Middleware
