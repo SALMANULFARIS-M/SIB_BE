@@ -1,14 +1,7 @@
-import { v2 as cloudinary } from "cloudinary";
 import jwt from 'jsonwebtoken';
 import  Blog  from "../models/blog.js";
+import cloudinary from "../config/cloudinary.js";
 
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 // Helper function to parse list-like strings into arrays
 const parseListString = (text) => {

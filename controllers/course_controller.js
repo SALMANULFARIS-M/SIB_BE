@@ -1,6 +1,6 @@
 import Course from "../models/course.js";
 
-export const addCourse = async (req, res) => {
+export const addCourse = async (req, res,next) => {
   try {
     const course = new Course(req.body);
     await course.save();
@@ -10,7 +10,7 @@ export const addCourse = async (req, res) => {
   }
 };
 
-export const getCourses = async (req, res) => {
+export const getCourses = async (req, res,next) => {
   try {
     const courses = await Course.find().populate("collegeId");    
     res.json(courses);
@@ -33,7 +33,7 @@ export const getCoursesById = async (req, res, next) => {
     }
   };
 
-export const updateCourse = async (req, res) => {
+export const updateCourse = async (req, res,next) => {
   try {
     const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(course);
@@ -42,7 +42,7 @@ export const updateCourse = async (req, res) => {
   }
 };
 
-export const deleteCourse = async (req, res) => {
+export const deleteCourse = async (req, res,next) => {
   try {
     await Course.findByIdAndDelete(req.params.id);
     res.json({success:true, message: "Course deleted" });

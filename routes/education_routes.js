@@ -17,7 +17,7 @@ router.delete("/university/:id", deleteUniversity);
 //college 
 router.get('/colleges',getColleges);
 router.get('/college/Id',getCollegeById);
-router.post("/college", addCollege);
+router.post("/college", upload.array('photos', 3), addCollege);
 router.put("/college/:id", updateCollege);
 router.delete("/college/:id", deleteCollege);
 

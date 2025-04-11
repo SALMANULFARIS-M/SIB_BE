@@ -40,6 +40,7 @@ app.use((err, req, res, next) => {
   // Customize error response based on error type
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
+console.log("error:",err);
 
   res.status(statusCode).json({ success: false, message });
 });
