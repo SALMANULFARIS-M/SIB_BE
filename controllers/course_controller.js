@@ -1,14 +1,65 @@
 import Course from "../models/course.js";
 
-export const addCourse = async (req, res,next) => {
+export const addCourse = async (req, res, next) => {
   try {
-    const course = new Course(req.body);
-    await course.save();
-    res.status(201).json(course);
+    const {
+      title,
+      degree,
+      level,
+      category,
+      fees,
+      durationValue,
+      durationUnit,
+      medianLPA,
+      affiliation,
+      collegeId,
+      providerType,
+      providerName,
+      isOnline,
+      isOffline,
+      isShortTerm,
+    } = req.body;
+
+
+    // Basic validation (optional but user-friendly)
+    if (!title || !degree || !level || !category || !fees || !durationValue || !durationUnit || !medianLPA) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    const newCourse = new Course({
+      title: title.trim(),
+      degree: degree.trim(),
+      level,
+      category,
+      fees,
+      durationValue,
+      durationUnit,
+      medianLPA,
+      affiliation: affiliation?.trim(),
+      collegeId: collegeId || null,
+      providerType,
+      providerName: providerName?.trim() || null,
+      isOnline: !!isOnline,
+      isOffline: !!isOffline,
+      isShortTerm: !!isShortTerm,
+    });
+
+    await newCourse.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Course added successfully",
+      data: newCourse,
+    });
   } catch (err) {
-   next(err);
+    next(err);
   }
 };
+
+
 
 export const getCourses = async (req, res,next) => {
   try {

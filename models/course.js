@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  degree: { type: String, required: true }, 
+  degree: { type: String, required: true },
   level: {
     type: String,
     enum: ["UG", "PG", "Course"], // "Course" for skill-based external courses
@@ -10,7 +10,17 @@ const courseSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["Engineering", "Science", "Management", "Commerce", "Medical", "Arts", "Law", "Other"],
+    enum: [
+      "Engineering",
+      "Science",
+      "Management",
+      "Commerce",
+      "Medical",
+      "IT",
+      "Arts",
+      "Law",
+      "Other",
+    ],
     required: true,
   },
   fees: { type: Number, required: true },
@@ -21,7 +31,7 @@ const courseSchema = new mongoose.Schema({
     required: true,
   },
   medianLPA: { type: Number, required: true },
-  affiliation: { type: String, required: true },
+  affiliation: { type: String, required: false },
 
   // For regular college-based courses
   collegeId: {
@@ -40,7 +50,7 @@ const courseSchema = new mongoose.Schema({
     type: String,
     default: null, // e.g., "Coursera", "NIIT", etc.
   },
-
+  isShortTerm: { type: Boolean, default: false },
   isOnline: { type: Boolean, default: false },
   isOffline: { type: Boolean, default: true },
 });

@@ -27,7 +27,6 @@ export const addUniversity = async (req, res,next) => {
     await university.save();
     res.status(201).json(university);
   } catch (err) {
-    console.log("Error uploading image:", err);
     
     next(err);
   }
