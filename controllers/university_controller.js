@@ -4,7 +4,8 @@ import cloudinary from "../config/cloudinary.js";
 
 export const addUniversity = async (req, res,next) => {
   try {
-    const { name} = req.body;
+    const { name, description,
+  } = req.body;
     if (!req.file) {
       return res.status(400).json({ error: "No image uploaded" });
     }
@@ -22,7 +23,7 @@ export const addUniversity = async (req, res,next) => {
       );
       upload.end(req.file.buffer); // Pass file buffer to Cloudinary
     });
-    const university = new University({ name,logo: uploadResult.secure_url,  imagePublicId: uploadResult.public_id
+    const university = new University({ name,description,logo: uploadResult.secure_url,  imagePublicId: uploadResult.public_id
     });
     await university.save();
     res.status(201).json(university);

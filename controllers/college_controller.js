@@ -14,6 +14,7 @@ export const addCollege = async (req, res, next) => {
       feeFrom,
       feeUpto,
       courseLevels,
+      category, 
     } = req.body;
 
 
@@ -53,6 +54,9 @@ export const addCollege = async (req, res, next) => {
       courseLevels: Array.isArray(courseLevels)
         ? courseLevels
         : [courseLevels],
+        category: Array.isArray(category)
+        ? category
+        : [category],
       photos: imageUrls,
       ...(universityId && universityId !== 'autonomous' && {
         universityId,
