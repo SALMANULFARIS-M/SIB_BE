@@ -141,8 +141,7 @@ export const getColleges = async (req, res, next) => {
 
 export const getCollegeById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
+    const { id } = req.params; 
     const college = await College.findById(id)
       .populate("universityId")
       .populate("availableCourses");

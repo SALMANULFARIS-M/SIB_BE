@@ -14,16 +14,17 @@ router.post("/university",upload.single("logo"), addUniversity);
 router.put("/university/:id", updateUniversity);
 router.delete("/university/:id", deleteUniversity);
 
+
 //college 
 router.get('/colleges',getColleges);
-router.get('/college/Id',getCollegeById);
+router.get('/college/:id',getCollegeById);
 router.post("/college", upload.array('photos', 3), addCollege);
 router.put("/college/:id", updateCollege);
 router.delete("/college/:id", deleteCollege);
 
 //course
 router.get('/courses',getCourses);
-router.get('/course/Id',getCoursesById);
+router.get('/course/:id',getCoursesById);
 router.post("/course", addCourse);
 router.put("/course/:id", updateCourse);
 router.delete("/course/:id", deleteCourse);
