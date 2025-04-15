@@ -80,7 +80,12 @@ export const getColleges = async (req, res, next) => {
 
     const searchQuery = {
       ...(search ? { name: { $regex: search, $options: "i" } } : {}),
-      ...(category && category !== 'All' ? { category: { $in: [category] } } : {}),
+      ...(category && category !== 'All' && category !== 'Top Rated' 
+        ? { category: { $in: [category] } } 
+        : {}),
+      ...(category === 'Top Rated' 
+        ? { rating: { $gte: 3.8, $lte: 4.5 } } 
+        : {}),
     };
 
     if (!page || !limit) {
