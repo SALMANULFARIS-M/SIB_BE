@@ -80,13 +80,23 @@ export const getColleges = async (req, res, next) => {
 
     const searchQuery = {
       ...(search ? { name: { $regex: search, $options: "i" } } : {}),
-      ...(category && category !== 'All' && category !== 'Top Rated' 
-        ? { category: { $in: [category] } } 
+    
+      // Regular category
+      ...(category && category !== 'All' && category !== 'Top Rated' && category !== 'Autonomous'
+        ? { category: { $in: [category] } }
         : {}),
-      ...(category === 'Top Rated' 
-        ? { rating: { $gte: 3.8, $lte: 4.5 } } 
+    
+      // Top Rated category
+      ...(category === 'Top Rated'
+        ? { rating: { $gte: 3.8, $lte: 4.5 } }
+        : {}),
+    
+      // Autonomous colleges
+      ...(category === 'Autonomous'
+        ? { isAutonomous: true }
         : {}),
     };
+    
 
     if (!page || !limit) {
       const colleges = await College.find(searchQuery)
