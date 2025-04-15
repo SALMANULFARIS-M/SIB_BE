@@ -73,14 +73,56 @@ export const addCollege = async (req, res, next) => {
 
 export const getColleges = async (req, res, next) => {
   try {
-    const colleges = await College.find()
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    const search = req.query.search || "";
+    const category = req.query.category || "";
+
+    const searchQuery = {
+      ...(search ? { name: { $regex: search, $options: "i" } } : {}),
+      ...(category && category !== 'All' ? { category: { $in: [category] } } : {}),
+    };
+
+    if (!page || !limit) {
+      const colleges = await College.find(searchQuery)
+        .populate("universityId")
+        .populate("availableCourses")
+        .lean();
+
+      return res.status(200).json({
+        success: true,
+        colleges,
+        total: colleges.length,
+      });
+    }
+
+    const skip = (page - 1) * limit;
+
+    const colleges = await College.find(searchQuery)
       .populate("universityId")
-      .populate("availableCourses");
-    res.json(colleges);
+      .populate("availableCourses")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await College.countDocuments(searchQuery);
+
+    res.status(200).json({
+      success: true,
+      colleges,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     next(err);
   }
 };
+
+
 
 export const getCollegeById = async (req, res, next) => {
   try {

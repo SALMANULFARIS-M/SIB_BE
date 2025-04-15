@@ -20,7 +20,6 @@ export const addCourse = async (req, res, next) => {
       isShortTerm,
     } = req.body;
 
-
     // Basic validation (optional but user-friendly)
     if (!title || !degree || !level || !category || !fees || !durationValue || !durationUnit || !medianLPA) {
       return res.status(400).json({
@@ -60,15 +59,71 @@ export const addCourse = async (req, res, next) => {
 };
 
 
-
-export const getCourses = async (req, res,next) => {
+export const getCourses = async (req, res, next) => {
   try {
-    const courses = await Course.find().populate("collegeId");    
-    res.json(courses);
-  } catch (err) {
-   next(err);
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    const search = req.query.search || '';
+    const level = req.query.level || '';
+    const type = req.query.type || ''; 
+
+    const searchQuery = {
+      ...(search
+        ? {
+            $or: [
+              { title: { $regex: search, $options: 'i' } },
+              { providerName: { $regex: search, $options: 'i' } },
+            ],
+          }
+        : {}),
+      ...(level ? { level } : {}),
+      ...(type === 'online' ? { isOnline: true } : {}),
+      ...(type === 'short-term' ? { isShortTerm: true } : {}),
+    };
+
+    // If no pagination is provided, return all matching courses
+    if (!page || !limit) {
+      const courses = await Course.find(searchQuery)
+        .populate('collegeId')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res.status(200).json({
+        success: true,
+        courses,
+        total: courses.length,
+      });
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [courses, total] = await Promise.all([
+      Course.find(searchQuery)
+        .populate('collegeId')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Course.countDocuments(searchQuery),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      courses,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
+
+
+
 
 export const getCoursesById = async (req, res, next) => {
     try {
