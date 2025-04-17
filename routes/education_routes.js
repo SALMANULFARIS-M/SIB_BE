@@ -1,7 +1,7 @@
 import express from 'express';
 import { addUniversity, deleteUniversity, getUniversities, getUniversityWithColleges, updateUniversity } from '../controllers/university_controller.js';
-import { addCollege, deleteCollege, getCollegeById, getColleges, updateCollege } from '../controllers/college_controller.js';
-import { addCourse, deleteCourse, getCourses, getCoursesById, updateCourse } from '../controllers/course_controller.js';
+import { addCollege, deleteCollege, getCollegeById, getColleges, getCollegesIds, updateCollege } from '../controllers/college_controller.js';
+import { addCourse, deleteCourse, getCourses, getCoursesById, getCoursesIds, updateCourse } from '../controllers/course_controller.js';
 import upload from "../middleware/upload.js";
 
 const router = express.Router();
@@ -17,13 +17,15 @@ router.delete("/university/:id", deleteUniversity);
 
 //college 
 router.get('/colleges',getColleges);
-router.get('/college/:id',getCollegeById);
+router.get('/college-ids',getCollegesIds);
+router.get('/college/:id',getCollegeById)
 router.post("/college", upload.array('photos', 3), addCollege);
 router.put("/college/:id", updateCollege);
 router.delete("/college/:id", deleteCollege);
 
 //course
 router.get('/courses',getCourses);
+router.get('/course-ids', getCoursesIds);
 router.get('/course/:id',getCoursesById);
 router.post("/course", addCourse);
 router.put("/course/:id", updateCourse);

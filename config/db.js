@@ -13,6 +13,7 @@ const connectDB = async (retryCount = 0) => {
     console.error('❌ MONGODBSERVER environment variable is not defined');
     process.exit(1);
   }
+  console.log(process.env.MONGODBSERVER);
 
   try {
     // Connect to MongoDB (without deprecated options)

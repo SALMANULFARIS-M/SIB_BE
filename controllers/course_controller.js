@@ -122,6 +122,15 @@ export const getCourses = async (req, res, next) => {
   }
 };
 
+export const getCoursesIds=  async (req, res, next) => {
+  try {
+    const courses = await Course.find({}, '_id').lean();
+    const ids = courses.map(c => c._id.toString());
+    res.json(ids);
+  } catch (err) {
+    next(err);
+  }
+};
 
 
 

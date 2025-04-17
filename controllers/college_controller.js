@@ -139,6 +139,19 @@ export const getColleges = async (req, res, next) => {
 
 
 
+export const getCollegesIds= async (req, res, next) => {
+  try {
+    const colleges = await College.find({}, '_id').lean(); // Only fetch _id field
+    const ids = colleges.map(c => c._id.toString());
+    res.json(ids);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+
+
 export const getCollegeById = async (req, res, next) => {
   try {
     const { id } = req.params; 
