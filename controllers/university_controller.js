@@ -1,4 +1,5 @@
 import University from "../models/university.js";
+import College from "../models/college.js";
 import cloudinary from "../config/cloudinary.js";
 
 export const addUniversity = async (req, res, next) => {
@@ -85,20 +86,83 @@ export const getUniversities = async (req, res, next) => {
 export const getUniversityWithColleges = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    const search = req.query.search || '';
+    const category = req.query.category || '';
 
-    const university = await University.findById(id).populate({
-      path: "colleges",
-    });
-
+    // Validate university
+    const university = await University.findById(id).lean();
     if (!university) {
-      return res.status(404).json({ message: "University not found" });
+      return res.status(404).json({ success: false, message: 'University not found' });
     }
 
-    res.json(university);
+    // Construct search and filter conditions
+    const searchQuery = {
+      universityId: id,
+      ...(search
+        ? {
+            $or: [
+              { name: { $regex: search, $options: 'i' } },
+              { location: { $regex: search, $options: 'i' } },
+            ],
+          }
+        : {}),
+      ...(category && category !== 'All' && category !== 'Top Rated' && category !== 'Autonomous'
+        ? { category: { $in: [category] } }
+        : {}),
+      ...(category === 'Top Rated'
+        ? { rating: { $gte: 3.8, $lte: 4.5 } }
+        : {}),
+      ...(category === 'Autonomous'
+        ? { isAutonomous: true }
+        : {}),
+    };
+
+    // No pagination: return all matching colleges
+    if (!page || !limit) {
+      const colleges = await College.find(searchQuery)
+        .populate('availableCourses')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res.status(200).json({
+        success: true,
+        university,
+        colleges,
+        totalColleges: colleges.length,
+      });
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [colleges, total] = await Promise.all([
+      College.find(searchQuery)
+        .populate('availableCourses')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      College.countDocuments(searchQuery),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      university,
+      colleges,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     next(err);
   }
 };
+
+
 
 export const updateUniversity = async (req, res, next) => {
   try {
