@@ -1,5 +1,5 @@
 import express from 'express';
-import { addUniversity, deleteUniversity, getUniversities, getUniversitiesIds, getUniversityWithColleges, updateUniversity } from '../controllers/university_controller.js';
+import { addUniversity, deleteUniversity, getUniversities, getUniversitiesIds, getUniversityById, getUniversityWithColleges, updateUniversity } from '../controllers/university_controller.js';
 import { addCollege, deleteCollege, getCollegeById, getColleges, getCollegesIds, updateCollege } from '../controllers/college_controller.js';
 import { addCourse, deleteCourse, getCourses, getCourseById, getCoursesIds, updateCourse } from '../controllers/course_controller.js';
 import upload from "../middleware/upload.js";
@@ -9,7 +9,7 @@ const router = express.Router();
 
 //universities
 router.get('/universities',getUniversities);
-router.get("/university/:id", updateUniversity);
+router.get("/university/:id", getUniversityById);
 router.get('/universities-ids',getUniversitiesIds);
 router.get('/collegesUnderUniversites/:id',getUniversityWithColleges);
 router.post("/university",upload.single("logo"), addUniversity);
