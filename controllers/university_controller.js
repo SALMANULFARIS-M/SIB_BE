@@ -38,14 +38,10 @@ export const addUniversity = async (req, res, next) => {
 export const getUniversityById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const university = await University.findById(id)
-      .populate("Colleges")
-      .lean();
-
+    const university = await University.findById(id).lean();
     if (!university) {
       return res.status(404).json({ message: "University not found" });
     }
-
     res.status(200).json({ university, success: true });
   } catch (err) {
     next(err);
