@@ -52,6 +52,16 @@ export const getUniversityById = async (req, res, next) => {
   }
 };
 
+export const getUniversitiesIds= async (req, res, next) => {
+  try {
+    const universities = await University.find({}, '_id').lean(); // Only fetch _id field
+    const ids = universities.map(c => c._id.toString());
+    res.json(ids);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getUniversities = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page);
