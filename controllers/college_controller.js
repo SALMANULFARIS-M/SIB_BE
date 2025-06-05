@@ -137,8 +137,6 @@ export const getColleges = async (req, res, next) => {
   }
 };
 
-
-
 export const getCollegesIds= async (req, res, next) => {
   try {
     const colleges = await College.find({}, '_id').lean(); // Only fetch _id field
@@ -148,9 +146,6 @@ export const getCollegesIds= async (req, res, next) => {
     next(err);
   }
 };
-
-
-
 
 export const getCollegeById = async (req, res, next) => {
   try {
@@ -163,7 +158,7 @@ export const getCollegeById = async (req, res, next) => {
       return res.status(404).json({ message: "College not found" });
     }
 
-    res.json(college);
+    res.json({ success: true, college });
   } catch (err) {
     next(err);
   }
@@ -179,8 +174,6 @@ export const updateCollege = async (req, res, next) => {
     next(err);
   }
 };
-
-
 
 export const deleteCollege = async (req, res, next) => {
   try {
