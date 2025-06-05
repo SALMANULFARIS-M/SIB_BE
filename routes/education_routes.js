@@ -9,9 +9,10 @@ const router = express.Router();
 
 //universities
 router.get('/universities',getUniversities);
+router.get("/university/:id", updateUniversity);
 router.get('/collegesUnderUniversites/:id',getUniversityWithColleges);
 router.post("/university",upload.single("logo"), addUniversity);
-router.put("/university/:id", updateUniversity);
+router.put("/university/:id",upload.single("logo"), updateUniversity);
 router.delete("/university/:id", deleteUniversity);
 
 
