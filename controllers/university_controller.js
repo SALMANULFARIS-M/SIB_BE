@@ -37,7 +37,7 @@ export const addUniversity = async (req, res, next) => {
 
 export const getUniversityById = async (req, res, next) => {
   try {
-     const { id } = req.params; 
+    const { id } = req.params;
     const university = await University.findById(id)
       .populate("Colleges")
       .lean();
@@ -46,7 +46,7 @@ export const getUniversityById = async (req, res, next) => {
       return res.status(404).json({ message: "University not found" });
     }
 
-    res.status(200).json({university, success: true});
+    res.status(200).json({ university, success: true });
   } catch (err) {
     next(err);
   }
@@ -64,7 +64,9 @@ export const getUniversities = async (req, res, next) => {
 
     if (!page || !limit) {
       // No pagination – return full list (for admin dropdowns etc.)
-      const universities = await University.find(searchQuery).populate("colleges").lean();
+      const universities = await University.find(searchQuery)
+        .populate("colleges")
+        .lean();
 
       return res.status(200).json({
         success: true,
@@ -103,13 +105,15 @@ export const getUniversityWithColleges = async (req, res, next) => {
     const { id } = req.params;
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
-    const search = req.query.search || '';
-    const category = req.query.category || '';
+    const search = req.query.search || "";
+    const category = req.query.category || "";
 
     // Validate university
     const university = await University.findById(id).lean();
     if (!university) {
-      return res.status(404).json({ success: false, message: 'University not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "University not found" });
     }
 
     // Construct search and filter conditions
@@ -118,26 +122,25 @@ export const getUniversityWithColleges = async (req, res, next) => {
       ...(search
         ? {
             $or: [
-              { name: { $regex: search, $options: 'i' } },
-              { location: { $regex: search, $options: 'i' } },
+              { name: { $regex: search, $options: "i" } },
+              { location: { $regex: search, $options: "i" } },
             ],
           }
         : {}),
-      ...(category && category !== 'All' && category !== 'Top Rated' && category !== 'Autonomous'
+      ...(category &&
+      category !== "All" &&
+      category !== "Top Rated" &&
+      category !== "Autonomous"
         ? { category: { $in: [category] } }
         : {}),
-      ...(category === 'Top Rated'
-        ? { rating: { $gte: 3.8, $lte: 4.5 } }
-        : {}),
-      ...(category === 'Autonomous'
-        ? { isAutonomous: true }
-        : {}),
+      ...(category === "Top Rated" ? { rating: { $gte: 3.8, $lte: 4.5 } } : {}),
+      ...(category === "Autonomous" ? { isAutonomous: true } : {}),
     };
 
     // No pagination: return all matching colleges
     if (!page || !limit) {
       const colleges = await College.find(searchQuery)
-        .populate('availableCourses')
+        .populate("availableCourses")
         .sort({ createdAt: -1 })
         .lean();
 
@@ -153,7 +156,7 @@ export const getUniversityWithColleges = async (req, res, next) => {
 
     const [colleges, total] = await Promise.all([
       College.find(searchQuery)
-        .populate('availableCourses')
+        .populate("availableCourses")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -177,19 +180,51 @@ export const getUniversityWithColleges = async (req, res, next) => {
   }
 };
 
-
 export const updateUniversity = async (req, res, next) => {
   try {
-    const { name, logo } = req.body;
+    const { name, description } = req.body;
 
-    const university = await University.findByIdAndUpdate(
-      req.params.id,
-      name,
-      logo,
-      { new: true }
-    );
-    res.json(university);
+    const university = await University.findById(req.params.id);
+    if (!university) {
+      return res.status(404).json({ message: "University not found" });
+    }
+
+    let logo = university.logo;
+    let imagePublicId = university.imagePublicId;
+
+    // If a new file is uploaded, replace the existing one in Cloudinary
+    if (req.file) {
+      // Optionally delete old image from Cloudinary
+      if (university.imagePublicId) {
+        await cloudinary.uploader.destroy(university.imagePublicId);
+      }
+
+      // Upload new image
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "universities" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      logo = uploadResult.secure_url;
+      imagePublicId = uploadResult.public_id;
+    }
+
+    // Update the university
+    university.name = name;
+    university.description = description;
+    university.logo = logo;
+    university.imagePublicId = imagePublicId;
+
+    const updated = await university.save();
+    res.json(updated);
   } catch (err) {
+    console.error(err);
     next(err);
   }
 };
