@@ -41,17 +41,17 @@ export const addCollege = async (req, res, next) => {
     }
 
     // Fix: Handle arrays properly
-    const processedCourseLevels = Array.isArray(courseLevels) 
-      ? courseLevels 
-      : courseLevels 
-        ? [courseLevels] 
-        : [];
+    const processedCourseLevels = Array.isArray(courseLevels)
+      ? courseLevels
+      : courseLevels
+      ? [courseLevels]
+      : [];
 
-    const processedCategories = Array.isArray(category) 
-      ? category 
-      : category 
-        ? [category] 
-        : [];
+    const processedCategories = Array.isArray(category)
+      ? category
+      : category
+      ? [category]
+      : [];
 
     const newCollege = new College({
       name,
@@ -82,7 +82,6 @@ export const addCollege = async (req, res, next) => {
     next(err);
   }
 };
-
 
 export const getColleges = async (req, res, next) => {
   try {
@@ -181,7 +180,7 @@ export const updateCollege = async (req, res, next) => {
 
     const existingCollege = await College.findById(collegeId);
     if (!existingCollege) {
-      return res.status(404).json({ message: 'College not found' });
+      return res.status(404).json({ message: "College not found" });
     }
 
     const formData = req.body;
@@ -194,22 +193,21 @@ export const updateCollege = async (req, res, next) => {
       ? [formData.courseLevels]
       : [];
 
-    const categories = Array.isArray(formData['categories[]'])
-      ? formData['categories[]']
-      : formData['categories[]']
-      ? [formData['categories[]']]
+    const categories = Array.isArray(formData.category)
+      ? category
+      : category
+      ? [category]
       : [];
-
     // Fix: Handle existing images properly
     let finalPhotos = [];
-    
+
     // Parse existing images from frontend
     if (formData.existingImages) {
       try {
         const existingImages = JSON.parse(formData.existingImages);
         finalPhotos = [...existingImages];
       } catch (err) {
-        console.error('Error parsing existing images:', err);
+        console.error("Error parsing existing images:", err);
         finalPhotos = [...(existingCollege.photos || [])];
       }
     }
@@ -218,9 +216,9 @@ export const updateCollege = async (req, res, next) => {
     if (photos && photos.length > 0) {
       for (const file of photos) {
         const result = await uploadToCloudinary(file.buffer);
-        finalPhotos.push({ 
-          url: result.secure_url, 
-          public_id: result.public_id 
+        finalPhotos.push({
+          url: result.secure_url,
+          public_id: result.public_id,
         });
       }
     }
@@ -230,8 +228,9 @@ export const updateCollege = async (req, res, next) => {
       name: formData.name,
       universityId: formData.universityId || null,
       rating: Number(formData.rating) || 0,
-      location: formData.location || '',
-      isAutonomous: formData.isAutonomous === 'true' || formData.isAutonomous === true,
+      location: formData.location || "",
+      isAutonomous:
+        formData.isAutonomous === "true" || formData.isAutonomous === true,
       courseLevels,
       category: categories, // Use 'category' field consistently
       description: formData.description,
@@ -241,18 +240,17 @@ export const updateCollege = async (req, res, next) => {
     };
 
     const updatedCollege = await College.findByIdAndUpdate(
-      collegeId, 
-      updatedFields, 
+      collegeId,
+      updatedFields,
       { new: true }
     );
 
     return res.json({ success: true, college: updatedCollege });
   } catch (err) {
-    console.error('Error updating college:', err);
+    console.error("Error updating college:", err);
     next(err);
   }
 };
-
 
 export const deleteCollege = async (req, res, next) => {
   try {
