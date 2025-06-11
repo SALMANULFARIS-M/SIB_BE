@@ -47,11 +47,6 @@ export const addCollege = async (req, res, next) => {
       ? [courseLevels]
       : [];
 
-    const processedCategories = Array.isArray(category)
-      ? category
-      : category
-      ? [category]
-      : [];
 
     const newCollege = new College({
       name,
@@ -62,7 +57,7 @@ export const addCollege = async (req, res, next) => {
       feeFrom: Number(feeFrom),
       feeUpto: Number(feeUpto),
       courseLevels: processedCourseLevels,
-      category: processedCategories, // Use 'category' field in schema
+      category: category, // Use 'category' field in schema
       photos: imageUrls,
       ...(universityId &&
         universityId !== "autonomous" && {
@@ -184,6 +179,8 @@ export const updateCollege = async (req, res, next) => {
     }
 
     const formData = req.body;
+    console.log(formData);
+    
     const photos = req.files || [];
 
     // Fix: Handle course levels and categories consistently
@@ -193,12 +190,6 @@ export const updateCollege = async (req, res, next) => {
       ? [formData.courseLevels]
       : [];
 
-    const categories = Array.isArray(formData.category)
-      ? category
-      : category
-      ? [category]
-      : [];
-    // Fix: Handle existing images properly
     let finalPhotos = [];
 
     // Parse existing images from frontend
@@ -232,7 +223,7 @@ export const updateCollege = async (req, res, next) => {
       isAutonomous:
         formData.isAutonomous === "true" || formData.isAutonomous === true,
       courseLevels,
-      category: categories, // Use 'category' field consistently
+      category: formData.category, // Use 'category' field consistently
       description: formData.description,
       feeFrom: Number(formData.feeFrom),
       feeUpto: Number(formData.feeUpto),
